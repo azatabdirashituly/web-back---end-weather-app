@@ -1,7 +1,6 @@
 const express = require('express');
 const https = require('https');
 const bodyParser = require('body-parser');
-const {Configuration, OpenAIApi } = require('openai');
 
 const app = express();
 app.use(express.static('public'));
@@ -24,7 +23,6 @@ app.post('/', async (req, res) => {
     const imageData = await fetchApi(pexelsUrl, {
       'Authorization': `${pexelsApiKey}`
     });
-    console.log(imageUrl);
     res.redirect(`/?weatherData=${encodeURIComponent(JSON.stringify(weatherData))}&imageData=${encodeURIComponent(JSON.stringify(imageData))}`);
   } catch (error) {
     console.error('Error:', error);
