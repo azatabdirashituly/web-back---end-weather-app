@@ -1,0 +1,115 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="../styles/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <title>Weather App</title>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="search">
+                <form id="weatherForm" method="post">
+                    <label for="cityInput"></label>
+                    <input type="text" class="cityName" id="cityInput" name="city" placeholder="Enter the city name">
+                    <button type="submit"><img src="../images/search.png" alt=""></button>
+                    <p class="weather-data"></p>
+                </form>
+            </div>
+            <div class="weather">
+                <img src="" class="weather-icon" alt="">
+                <h1 class="temp"></h1>
+                <p class="feels-like"></p>
+                <h2 class="description"></h2>
+                <p id="data"></p>
+                <div class="details">
+                    <div class="col">
+                        <img src="../images/humidity.png" alt="">
+                        <div>
+                            <p class="humidity">0</p>
+                            <p>Humidity</p>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <img src="../images/wind.png" alt="">
+                        <div>
+                            <p class="wind">0</p>
+                            <p>Wind speed</p>
+                        </div>
+                    </div>
+                </div>
+                <p class="country-code"></p>
+            </div>
+        </div>
+        <div id="map" style="width: 100%; height: 500px;"></div>
+    </div>
+    <div class="images">
+        <h2 class="imageTitle">Here is some images related to your searched city</h2>
+        <img class="image-1" src="" alt="">
+        <img class="image-2" src="" alt="">
+        <img class="image-3" src="" alt="">
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        const weatherData = params.get('weatherData');
+        const imageData = params.get('imageData');
+
+        const image = document.querySelector('.weather-icon'); 
+        const tempe = document.querySelector('.temp');
+        const feels_like = document.querySelector('.feels-like'); 
+        const description = document.querySelector('.description');
+        const humidity = document.querySelector('.humidity');
+        const wind_speed = document.querySelector('.wind');
+        const country_code = document.querySelector('.country-code');
+        const divImages = document.querySelector('.images');
+        const imageTitle = document.querySelector('.imageTitle')
+        const images = document.querySelectorAll('.images img');
+        
+
+        async function setValues(weatherData, imageData) {
+            if (weatherData && imageData) {
+                const weatherdata = await JSON.parse(decodeURIComponent(weatherData));
+                const imagedata = await JSON.parse(decodeURIComponent(imageData));
+                console.log(weatherdata);
+                console.log(imagedata.photos);
+
+                if (weatherdata.cod === '404') {
+                    alert("City not found")
+                } else {
+                    const iconCode = weatherdata.weather[0].icon;
+                    const iconUrl = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+                    image.src = iconUrl;
+                    tempe.textContent = `${weatherdata.main.temp}°C`;
+                    feels_like.textContent = `Feels like ${weatherdata.main.feels_like}°C`
+                    description.textContent = `Description: ${weatherdata.weather[0].description}`;
+                    humidity.textContent = `${weatherdata.main.humidity}%`;
+                    wind_speed.textContent = `${weatherdata.wind.speed} Km/H`;
+                    country_code.textContent = `Country code: ${weatherdata.sys.country}`;
+
+                    const map = L.map('map').setView([weatherdata.coord.lat, weatherdata.coord.lon], 12);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    }).addTo(map);
+
+                    document.addEventListener('DOMContentLoaded', () => {
+                        if (imagedata.photos.length === 0) {
+                            divImages.style.display = "none";
+                        } else {
+                            images.forEach((img, index) => {
+                                img.src = imagedata.photos[index].src.large;
+                            })
+                        }
+                    })
+                }
+            }
+        }
+        setValues(weatherData, imageData);
+
+    </script>
+</body>
+</html>
